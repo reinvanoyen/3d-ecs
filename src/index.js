@@ -3,9 +3,14 @@
 const ECS = require('yagl-ecs'),
 	Renderer = require('./system/renderer'),
 	Atmosphere = require('./system/atmosphere'),
-	Model = require('./component/model'),
+	Geometry = require('./component/geometry'),
+	Sphere = require('./component/sphere'),
+	Cube = require('./component/cube'),
+	JSONMaterial = require('./component/jsonmaterial'),
+	PhongMaterial = require('./component/phongmaterial'),
 	Position = require('./component/position'),
 	Sky = require('./component/sky'),
+	Skybox = require('./component/skybox'),
 	Camera = require('./component/camera')
 ;
 
@@ -19,34 +24,56 @@ ecs.addSystem( new Atmosphere( renderer.scene ) );
 
 // Entities
 
-let entity01 = new ECS.Entity( 0, [
-	Model,
-	Position,
-	Camera
+let plane = new ECS.Entity( 0, [
+	Geometry,
+	PhongMaterial,
+	Position
 ] );
 
 let sky = new ECS.Entity( 0, [
 	Sky
 ] );
 
-entity01.updateComponent( 'position', { x: 0, y: 0, z: 0 } );
-entity01.updateComponent( 'model', { src: 'assets/model/texture_space.json' } );
-entity01.updateComponent( 'camera', { radius: 50 } );
+let skybox = new ECS.Entity( 0, [
+	Cube,
+	Position,
+	Skybox,
+	Camera
+] );
 
-ecs.addEntity( entity01 );
+plane.updateComponent( 'position', { x: 1, y: 0, z: -5 } );
+plane.updateComponent( 'phongmaterial', { envMap: 'assets/textures/skybox/nz.jpg' } );
+
+skybox.updateComponent( 'cube', { width: 100, height: 100, depth: 100 } );
+skybox.updateComponent( 'camera', { radius: 30 } );
+
+sky.updateComponent( 'sky', {
+	turbidity: 11,
+	reyleigh: 2.8,
+	luminance: 1.1,
+	inclination: 0.5,
+	azimuth: 0.125
+} );
+
+ecs.addEntity( plane );
+ecs.addEntity( skybox );
 ecs.addEntity( sky );
 
 // Animation loop
+
+window.addEventListener( 'mousemove', e => {
+
+	skybox.updateComponent( 'camera', {
+		angle: e.clientX / 300
+	} );
+} );
 
 let angle = 0;
 
 function animate() {
 
-	angle += .001;
-
-	sky.updateComponent( 'sky', { azimuth: Math.sin( angle ) } );
-	entity01.updateComponent( 'camera', { angle: Math.cos( angle ) } );
-
+	angle += .01;
+	sky.updateComponent( 'sky', { inclination: Math.sin( angle ) } );
 	requestAnimationFrame( animate );
 	ecs.update();
 }

@@ -28,6 +28,9 @@ class Atmosphere extends ECS.System {
 
 		// Sun position
 		this.sunPosition = new THREE.Vector3();
+
+		let hemiLight = new THREE.HemisphereLight( 0xf35938, 0xf35938, 0.6 );
+		this.scene.add( hemiLight );
 	}
 
 	test( entity ) {
