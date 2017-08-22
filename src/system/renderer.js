@@ -11,7 +11,9 @@ class Renderer extends ECS.System {
 
 		super();
 
-		this.renderer = new THREE.WebGLRenderer();
+		this.renderer = new THREE.WebGLRenderer( {
+			antialias: true
+		} );
 
 		this.renderer.setPixelRatio( window.devicePixelRatio );
 		this.renderer.setSize( width, height );

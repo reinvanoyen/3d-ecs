@@ -6,6 +6,7 @@ const ECS = require('yagl-ecs'),
 	Environment = require('./system/environment'),
 	Movement = require('./system/movement'),
 	Particles = require('./system/particles'),
+	MouseIntersectionSystem = require('./system/mouseintersectionsystem'),
 	Geometry = require('./component/geometry'),
 	Sphere = require('./component/sphere'),
 	Cube = require('./component/cube'),
@@ -16,7 +17,8 @@ const ECS = require('yagl-ecs'),
 	Atmosphere = require('./component/atmosphere'),
 	Skybox = require('./component/skybox'),
 	OrbitCamera = require('./component/orbitcamera'),
-	Emitter = require('./component/emitter')
+	Emitter = require('./component/emitter'),
+	MouseIntersectable = require('./component/mouseintersectable')
 ;
 
 let ecs = new ECS();
@@ -29,6 +31,7 @@ ecs.addSystem( new Camera( renderer.camera ) );
 ecs.addSystem( new Environment( renderer.scene ) );
 ecs.addSystem( new Particles( renderer.scene, renderer.camera ) );
 ecs.addSystem( new Movement() );
+ecs.addSystem( new MouseIntersectionSystem( renderer.renderer, renderer.scene, renderer.camera ) );
 
 // Entities
 
@@ -37,7 +40,8 @@ let plane = new ECS.Entity( 0, [
 	PhongMaterial,
 	Position,
 	Velocity,
-	OrbitCamera
+	OrbitCamera,
+	MouseIntersectable
 ] );
 
 let atmosphere = new ECS.Entity( 0, [ Atmosphere ] );
@@ -80,10 +84,6 @@ cloudLayer02.updateComponent( 'position', {
 	y: -20
 } );
 
-plane.updateComponent( 'velocity', {
-	z: 1
-} );
-
 plane.updateComponent( 'orbitcamera', {
 	radius: 20
 } );
@@ -91,6 +91,7 @@ plane.updateComponent( 'orbitcamera', {
 plane.updateComponent( 'phongmaterial', {
 	shininess: 0,
 	specular: 0,
+	reflectivity: 0.3,
 	envMap: 'assets/textures/skybox/nz.jpg'
 } );
 
@@ -109,6 +110,20 @@ ecs.addEntity( atmosphere );
 
 // Event listeners
 
+let cameraInput = document.createElement( 'input' );
+cameraInput.setAttribute( 'type', 'range' );
+cameraInput.setAttribute( 'min', -100 );
+cameraInput.setAttribute( 'max', 100 );
+document.body.appendChild( cameraInput );
+
+cameraInput.addEventListener( 'change', e => {
+
+	plane.updateComponent( 'orbitcamera', {
+		angleX: cameraInput.value / 100 * 360,
+	} );
+} );
+
+/*
 window.addEventListener( 'mousemove', e => {
 
 	plane.updateComponent( 'orbitcamera', {
@@ -116,6 +131,7 @@ window.addEventListener( 'mousemove', e => {
 		angleY: e.clientY / 300
 	} );
 } );
+*/
 
 window.addEventListener( 'click', e => {
 
