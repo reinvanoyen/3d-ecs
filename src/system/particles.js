@@ -25,7 +25,7 @@ class Particles extends ECS.System {
 		texture.magFilter = THREE.LinearMipMapLinearFilter;
 		texture.minFilter = THREE.LinearMipMapLinearFilter;
 
-		// create the particle variables
+		// create the particle geometry and material
 		let particles = new THREE.Geometry(),
 			pMaterial = new THREE.PointsMaterial( {
 				color: 0xFFFFFF,
@@ -37,7 +37,7 @@ class Particles extends ECS.System {
 			} );
 
 		// now create the individual particles
-		for( let p = 0; p < entity.components.emitter.amount; p++ ) {
+		for( let p = 0; p < emitter.amount; p++ ) {
 
 			// create a particle with random
 			let pX = Math.random() * emitter.width - emitter.width / 2,
@@ -47,8 +47,12 @@ class Particles extends ECS.System {
 
 			let particle = new THREE.Vector3( pX, pY, pZ );
 
-			// create a velocity vector
-			particle.velocity = new THREE.Vector3( 0, 0, -Math.random() );
+			// create a velocity vector for the particle
+			particle.velocity = new THREE.Vector3(
+				MathUtils.randFloatBetween( emitter.minVX, emitter.maxVX ),
+				MathUtils.randFloatBetween( emitter.minVY, emitter.maxVY ),
+				MathUtils.randFloatBetween( emitter.minVZ, emitter.maxVZ )
+			);
 
 			// add it to the geometry
 			particles.vertices.push( particle );
@@ -57,7 +61,7 @@ class Particles extends ECS.System {
 		// create the particle system
 		let particleSystem = new THREE.Points( particles, pMaterial );
 
-		particleSystem.position.set( 0, -15, 0 );
+		particleSystem.position.set( position.x, position.y, position.z );
 
 		// add it to the scene
 		particleSystem.sortParticles = true;
@@ -68,9 +72,9 @@ class Particles extends ECS.System {
 
 	update( entity ) {
 
-		let {emitter, position} = entity.components;
+		if( entity.particles && entity.particleSystem ) {
 
-		if( entity.particles ) {
+			let {emitter, position} = entity.components;
 
 			let pCount = emitter.amount;
 

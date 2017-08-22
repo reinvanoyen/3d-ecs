@@ -2,7 +2,9 @@
 
 const ECS = require('yagl-ecs'),
 	Renderer = require('./system/renderer'),
-	Atmosphere = require('./system/atmosphere'),
+	Camera = require('./system/camera'),
+	Environment = require('./system/environment'),
+	Movement = require('./system/movement'),
 	Particles = require('./system/particles'),
 	Geometry = require('./component/geometry'),
 	Sphere = require('./component/sphere'),
@@ -10,9 +12,10 @@ const ECS = require('yagl-ecs'),
 	JSONMaterial = require('./component/jsonmaterial'),
 	PhongMaterial = require('./component/phongmaterial'),
 	Position = require('./component/position'),
-	Sky = require('./component/sky'),
+	Velocity = require('./component/velocity'),
+	Atmosphere = require('./component/atmosphere'),
 	Skybox = require('./component/skybox'),
-	Camera = require('./component/camera'),
+	OrbitCamera = require('./component/orbitcamera'),
 	Emitter = require('./component/emitter')
 ;
 
@@ -22,8 +25,10 @@ let ecs = new ECS();
 let renderer = new Renderer( window.innerWidth, window.innerHeight );
 
 ecs.addSystem( renderer );
-ecs.addSystem( new Atmosphere( renderer.scene ) );
+ecs.addSystem( new Camera( renderer.camera ) );
+ecs.addSystem( new Environment( renderer.scene ) );
 ecs.addSystem( new Particles( renderer.scene, renderer.camera ) );
+ecs.addSystem( new Movement() );
 
 // Entities
 
@@ -31,45 +36,38 @@ let plane = new ECS.Entity( 0, [
 	Geometry,
 	PhongMaterial,
 	Position,
-	Camera
+	Velocity,
+	OrbitCamera
 ] );
 
-let sky = new ECS.Entity( 0, [
-	Sky
-] );
+let atmosphere = new ECS.Entity( 0, [ Atmosphere ] );
 
-/*
-let skybox = new ECS.Entity( 0, [
-	Cube,
-	Position,
-	Skybox,
-	Camera
-] );
-*/
-
-let particleEmitter = new ECS.Entity( 0, [
+let cloudLayer = new ECS.Entity( 0, [
 	Position,
 	Emitter
 ] );
 
-let particleEmitter02 = new ECS.Entity( 0, [
+let cloudLayer02 = new ECS.Entity( 0, [
 	Position,
 	Emitter
 ] );
 
-particleEmitter.updateComponent( 'emitter', {
+cloudLayer.updateComponent( 'emitter', {
 	amount: 100,
 	width: 500,
 	height: 5,
 	depth: 500,
-	particleSize: 150
+	particleSize: 150,
+	maxVX: 0.05,
+	maxVY: 0.02,
+	maxVZ: 0.03
 } );
 
-particleEmitter.updateComponent( 'position', {
+cloudLayer.updateComponent( 'position', {
 	y: -20
 } );
 
-particleEmitter02.updateComponent( 'emitter', {
+cloudLayer02.updateComponent( 'emitter', {
 	textureSrc: 'assets/textures/cloud02.png',
 	amount: 500,
 	width: 500,
@@ -78,20 +76,25 @@ particleEmitter02.updateComponent( 'emitter', {
 	particleSize: 150
 } );
 
-particleEmitter02.updateComponent( 'position', {
+cloudLayer02.updateComponent( 'position', {
 	y: -20
 } );
 
-plane.updateComponent( 'geometry', { src: 'assets/model/texture_space.json' } );
-plane.updateComponent( 'position', { x: 0, y: 0, z: 0 } );
-plane.updateComponent( 'phongmaterial', { envMap: 'assets/textures/skybox/nz.jpg' } );
+plane.updateComponent( 'velocity', {
+	z: 1
+} );
 
-/*
-skybox.updateComponent( 'cube', { width: 1000, height: 1000, depth: 1000 } );
-skybox.updateComponent( 'camera', { radius: 100 } );
-*/
+plane.updateComponent( 'orbitcamera', {
+	radius: 20
+} );
 
-sky.updateComponent( 'sky', {
+plane.updateComponent( 'phongmaterial', {
+	shininess: 0,
+	specular: 0,
+	envMap: 'assets/textures/skybox/nz.jpg'
+} );
+
+atmosphere.updateComponent( 'atmosphere', {
 	turbidity: 11,
 	reyleigh: 2.8,
 	luminance: 1.1,
@@ -100,25 +103,31 @@ sky.updateComponent( 'sky', {
 } );
 
 ecs.addEntity( plane );
-ecs.addEntity( particleEmitter02 );
-//ecs.addEntity( skybox );
-ecs.addEntity( particleEmitter );
-ecs.addEntity( sky );
+ecs.addEntity( cloudLayer02 );
+ecs.addEntity( cloudLayer );
+ecs.addEntity( atmosphere );
 
-// Animation loop
+// Event listeners
 
 window.addEventListener( 'mousemove', e => {
 
-	plane.updateComponent( 'camera', {
-		angle: e.clientX / 300
+	plane.updateComponent( 'orbitcamera', {
+		angleX: e.clientX / 300,
+		angleY: e.clientY / 300
 	} );
 } );
 
-let angle = 0;
+window.addEventListener( 'click', e => {
+
+	plane.updateComponent( 'phongmaterial', {
+		color: 0x9dff00
+	} );
+} );
+
+// Animation loop
 
 function animate() {
 
-	angle += .01;
 	requestAnimationFrame( animate );
 	ecs.update();
 }

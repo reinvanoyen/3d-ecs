@@ -1,7 +1,7 @@
 "use strict";
 
-const Sky = {
-	name: 'sky',
+const Atmosphere = {
+	name: 'atmosphere',
 	defaults: {
 		turbidity: 10,
 		rayleigh: 2,
@@ -13,4 +13,4 @@ const Sky = {
 	}
 };
 
-module.exports = Sky;
+module.exports = Atmosphere;

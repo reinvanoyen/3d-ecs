@@ -6,7 +6,7 @@ const ECS = require('yagl-ecs'),
 
 require('../utils/skyshader');
 
-class Atmosphere extends ECS.System {
+class Environment extends ECS.System {
 
 	constructor( scene ) {
 
@@ -34,23 +34,23 @@ class Atmosphere extends ECS.System {
 	}
 
 	test( entity ) {
-		return entity.components.sky;
+		return entity.components.atmosphere;
 	}
 
 	update( entity ) {
 
-		let {sky} = entity.components;
+		let {atmosphere} = entity.components;
 
-		let theta = Math.PI * ( sky.inclination - 0.5 );
-		let phi = 2 * Math.PI * ( sky.azimuth - 0.5 );
+		let theta = Math.PI * ( atmosphere.inclination - 0.5 );
+		let phi = 2 * Math.PI * ( atmosphere.azimuth - 0.5 );
 
 		let uniforms = this.sky.uniforms;
 
-		uniforms.turbidity.value = sky.turbidity;
-		uniforms.rayleigh.value = sky.rayleigh;
-		uniforms.luminance.value = sky.luminance;
-		uniforms.mieCoefficient.value = sky.mieCoefficient;
-		uniforms.mieDirectionalG.value = sky.mieDirectionalG;
+		uniforms.turbidity.value = atmosphere.turbidity;
+		uniforms.rayleigh.value = atmosphere.rayleigh;
+		uniforms.luminance.value = atmosphere.luminance;
+		uniforms.mieCoefficient.value = atmosphere.mieCoefficient;
+		uniforms.mieDirectionalG.value = atmosphere.mieDirectionalG;
 
 		this.sunPosition.x = 400000 * Math.cos( phi );
 		this.sunPosition.y = 400000 * Math.sin( phi ) * Math.sin( theta );
@@ -61,4 +61,4 @@ class Atmosphere extends ECS.System {
 	}
 }
 
-module.exports = Atmosphere;
+module.exports = Environment;

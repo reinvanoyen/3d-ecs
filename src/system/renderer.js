@@ -5,8 +5,6 @@ const ECS = require('yagl-ecs'),
 	AssetContainer = require('../utils/assetcontainer')
 ;
 
-require('../utils/skyshader');
-
 class Renderer extends ECS.System {
 
 	constructor( width, height) {
@@ -29,7 +27,10 @@ class Renderer extends ECS.System {
 
 	test( entity ) {
 
-		return ( entity.components.geometry || entity.components.sphere || entity.components.camera )
+		return (
+				entity.components.geometry ||
+				entity.components.sphere
+			)
 			&& entity.components.position
 		;
 	}
@@ -69,6 +70,7 @@ class Renderer extends ECS.System {
 		let { jsonmaterial = false, phongmaterial = false, skybox = false } = entity.components;
 
 		if( jsonmaterial ) {
+
 			AssetContainer.getMaterial( jsonmaterial.src, ( mtl ) => {
 				cb( mtl );
 				return;
@@ -86,6 +88,7 @@ class Renderer extends ECS.System {
 
 			if( phongmaterial.envMap ) {
 
+				// @TODO improve
 				let textureLoader = new THREE.TextureLoader();
 				let envMap = textureLoader.load( phongmaterial.envMap );
 				envMap.mapping = THREE.EquirectangularReflectionMapping;
@@ -95,6 +98,7 @@ class Renderer extends ECS.System {
 			}
 
 			if( phongmaterial.map ) {
+
 				let textureLoader = new THREE.TextureLoader();
 				let map = textureLoader.load( phongmaterial.map );
 				mtl.setValues( { map: map } );
@@ -106,7 +110,7 @@ class Renderer extends ECS.System {
 
 		if( skybox ) {
 
-			// @TODO improve
+			// @TODO improve ??? (or remove all together)
 			let materialArray = [];
 			[ 'px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg' ].forEach( src => {
 				materialArray.push( new THREE.MeshBasicMaterial( {
@@ -137,20 +141,11 @@ class Renderer extends ECS.System {
 
 	update( entity ) {
 
-		let {position, camera = false, phongmaterial = false} = entity.components;
-
-		if( camera ) {
-
-			let vec3Target = new THREE.Vector3( position.x, position.y, position.z );
-
-			this.camera.position.x = ( vec3Target.x + camera.radius * Math.cos( camera.angle ) );
-			this.camera.position.y = ( vec3Target.y );
-			this.camera.position.z = ( vec3Target.z + camera.radius * Math.sin( camera.angle ) );
-
-			this.camera.lookAt( vec3Target );
-		}
+		let { position, phongmaterial = false } = entity.components;
 
 		if( entity.mesh ) {
+
+			entity.mesh.position.set( position.x, position.y, position.z );
 
 			if( phongmaterial ) {
 
@@ -161,12 +156,11 @@ class Renderer extends ECS.System {
 					reflectivity: phongmaterial.reflectivity
 				} );
 			}
-
-			entity.mesh.position.set( position.x, position.y, position.z );
 		}
 	}
 
 	postUpdate() {
+
 		this.renderer.render( this.scene, this.camera );
 	}
 }
