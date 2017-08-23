@@ -23,7 +23,11 @@ class Camera extends ECS.System {
 
 		if( orbitcamera ) {
 
-			let vec3Target = new THREE.Vector3( position.x, position.y, position.z );
+			let vec3Target = new THREE.Vector3(
+				position.x + orbitcamera.translateX,
+				position.y + orbitcamera.translateY,
+				position.z + orbitcamera.translateZ
+			);
 
 			this.camera.position.x = ( vec3Target.x + orbitcamera.radius * Math.cos( orbitcamera.angleX ) );
 			this.camera.position.y = ( vec3Target.y + orbitcamera.radius * Math.cos( orbitcamera.angleY ) );

@@ -22,14 +22,14 @@ class Environment extends ECS.System {
 		this.scene.add( this.ambient );
 
 		// Sun light
-		this.sunLight = new THREE.DirectionalLight( 0xedb547 );
+		this.sunLight = new THREE.DirectionalLight( 0xFBFCE8 );
 		this.sunLight.position.set( 0, 0, 0 );
 		this.scene.add( this.sunLight );
 
 		// Sun position
 		this.sunPosition = new THREE.Vector3();
 
-		let hemiLight = new THREE.HemisphereLight( 0xf35938, 0xf35938, 0.6 );
+		let hemiLight = new THREE.HemisphereLight( 0x24353E, 0xffffff, 0.6 );
 		this.scene.add( hemiLight );
 	}
 

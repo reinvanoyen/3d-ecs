@@ -94,8 +94,8 @@ class Renderer extends ECS.System {
 				let textureLoader = new THREE.TextureLoader();
 				let envMap = textureLoader.load( phongmaterial.envMap );
 				envMap.mapping = THREE.EquirectangularReflectionMapping;
-				//textureEquirec.magFilter = THREE.LinearFilter;
-				//textureEquirec.minFilter = THREE.LinearMipMapLinearFilter;
+				//envMap.magFilter = THREE.LinearFilter;
+				//envMap.minFilter = THREE.LinearMipMapLinearFilter;
 				mtl.setValues( { envMap: envMap } );
 			}
 

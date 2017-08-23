@@ -1,15 +1,19 @@
 "use strict";
 
 const ECS = require('yagl-ecs'),
+
 	Renderer = require('./system/renderer'),
 	Camera = require('./system/camera'),
 	Environment = require('./system/environment'),
 	Movement = require('./system/movement'),
 	Particles = require('./system/particles'),
-	MouseIntersectionSystem = require('./system/mouseintersectionsystem'),
+	MouseSystem = require('./system/mousesystem'),
+	DecalSystem = require('./system/decalsystem'),
+
 	Geometry = require('./component/geometry'),
 	Sphere = require('./component/sphere'),
 	Cube = require('./component/cube'),
+	Decal = require('./component/decal'),
 	JSONMaterial = require('./component/jsonmaterial'),
 	PhongMaterial = require('./component/phongmaterial'),
 	Position = require('./component/position'),
@@ -18,7 +22,7 @@ const ECS = require('yagl-ecs'),
 	Skybox = require('./component/skybox'),
 	OrbitCamera = require('./component/orbitcamera'),
 	Emitter = require('./component/emitter'),
-	MouseIntersectable = require('./component/mouseintersectable')
+	Clickable = require('./component/clickable')
 ;
 
 let ecs = new ECS();
@@ -31,7 +35,8 @@ ecs.addSystem( new Camera( renderer.camera ) );
 ecs.addSystem( new Environment( renderer.scene ) );
 ecs.addSystem( new Particles( renderer.scene, renderer.camera ) );
 ecs.addSystem( new Movement() );
-ecs.addSystem( new MouseIntersectionSystem( renderer.renderer, renderer.scene, renderer.camera ) );
+ecs.addSystem( new DecalSystem( renderer.scene ) );
+ecs.addSystem( new MouseSystem( renderer.renderer, renderer.scene, renderer.camera ) );
 
 // Entities
 
@@ -41,7 +46,17 @@ let plane = new ECS.Entity( 0, [
 	Position,
 	Velocity,
 	OrbitCamera,
-	MouseIntersectable
+	Clickable,
+	Decal
+] );
+
+let plane02 = new ECS.Entity( 0, [
+	Geometry,
+	PhongMaterial,
+	Position,
+	Velocity,
+	Clickable,
+	Decal
 ] );
 
 let atmosphere = new ECS.Entity( 0, [ Atmosphere ] );
@@ -56,30 +71,32 @@ let cloudLayer02 = new ECS.Entity( 0, [
 	Emitter
 ] );
 
+/*
 let snow = new ECS.Entity( 0, [
 	Position,
 	Emitter
 ] );
 
 snow.updateComponent( 'emitter', {
-	amount: 1000,
-	width: 500,
-	height: 500,
-	depth: 500,
-	particleSize: 5,
-	maxVY: -1,
-	minVY: -0.02,
-	maxVX: -0.03,
-	minVX: 0.03,
-	boundWidth: 500,
-	boundHeight: 500,
-	boundDepth: 500,
+	amount: 200,
+	width: 2,
+	height: 2,
+	depth: 2,
+	particleSize: 1,
+	maxVY: 0.5,
+	minVY: 0.2,
+	maxVX: -0.1,
+	minVX: 0.1,
+	boundWidth: 40,
+	boundHeight: 100,
+	boundDepth: 40,
 	boundReaction: 1
 } );
+*/
 
-snow.updateComponent( 'position', {
-	y: 50
-} );
+// snow.updateComponent( 'position', {
+// 	y: 50
+// } );
 
 cloudLayer.updateComponent( 'emitter', {
 	amount: 100,
@@ -115,15 +132,27 @@ cloudLayer02.updateComponent( 'position', {
 	y: -20
 } );
 
+plane02.updateComponent( 'position', {
+	x: -4
+} );
+
 plane.updateComponent( 'orbitcamera', {
-	radius: 20
+	radius: 10,
+	translateY: 3
 } );
 
 plane.updateComponent( 'phongmaterial', {
 	shininess: 0,
 	specular: 0,
 	reflectivity: 0.2,
-	envMap: 'assets/textures/skybox/nz.jpg'
+	envMap: 'assets/textures/reflection.jpg'
+} );
+
+plane02.updateComponent( 'phongmaterial', {
+	shininess: 0,
+	specular: 0,
+	reflectivity: 0.2,
+	envMap: 'assets/textures/reflection.jpg'
 } );
 
 atmosphere.updateComponent( 'atmosphere', {
@@ -135,7 +164,8 @@ atmosphere.updateComponent( 'atmosphere', {
 } );
 
 ecs.addEntity( plane );
-ecs.addEntity( snow );
+ecs.addEntity( plane02 );
+// ecs.addEntity( snow );
 ecs.addEntity( cloudLayer02 );
 ecs.addEntity( cloudLayer );
 ecs.addEntity( atmosphere );
@@ -157,25 +187,61 @@ cameraInput.addEventListener( 'change', e => {
 } );
 */
 
+let isDragging = false;
+
+// window.addEventListener( 'mousedown', e => {
+//
+// 	plane.updateComponent( 'orbitcamera', {
+// 		angleX: plane.components.orbitcamera.angleX + 0.1,
+// 		angleY: plane.components.orbitcamera.angleY + 0.1
+// 	} );
+// } );
+
+/*
 window.addEventListener( 'mousemove', e => {
 
 	plane.updateComponent( 'orbitcamera', {
-		angleX: e.clientX / 300,
-		angleY: e.clientY / 300
+		angleX: e.clientX / 1000
 	} );
 } );
+*/
 
-window.addEventListener( 'click', e => {
+window.addEventListener( 'mousewheel', e => {
 
-	plane.updateComponent( 'phongmaterial', {
-		color: 0x9dff00,
-		reflectivity: 1
+	plane.updateComponent( 'orbitcamera', {
+		radius: plane.components.orbitcamera.radius + .5,
 	} );
 } );
 
 // Animation loop
-
+let angle = 0;
 function animate() {
+
+	angle += 0.005;
+
+	plane.updateComponent( 'orbitcamera', {
+		angleX: angle
+	} );
+
+	if( plane.components.clickable.clicked ) {
+
+		plane.updateComponent( 'phongmaterial', {
+			color: Math.random() * 0xffffff,
+			specular: Math.random() * 0xffffff,
+			shininess: Math.random() * 50,
+			reflectivity: Math.random()
+		} );
+	}
+
+	if( plane02.components.clickable.clicked ) {
+
+		plane02.updateComponent( 'phongmaterial', {
+			color: Math.random() * 0xffffff,
+			specular: Math.random() * 0xffffff,
+			shininess: Math.random() * 50,
+			reflectivity: Math.random()
+		} );
+	}
 
 	requestAnimationFrame( animate );
 	ecs.update();
