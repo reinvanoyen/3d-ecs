@@ -70,7 +70,7 @@ snow.updateComponent( 'emitter', {
 	maxVY: -1,
 	minVY: -0.02,
 	maxVX: -0.03,
-	minVX: -0.01,
+	minVX: 0.03,
 	boundWidth: 500,
 	boundHeight: 500,
 	boundDepth: 500,
