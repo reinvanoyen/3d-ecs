@@ -56,6 +56,31 @@ let cloudLayer02 = new ECS.Entity( 0, [
 	Emitter
 ] );
 
+let snow = new ECS.Entity( 0, [
+	Position,
+	Emitter
+] );
+
+snow.updateComponent( 'emitter', {
+	amount: 1000,
+	width: 500,
+	height: 500,
+	depth: 500,
+	particleSize: 5,
+	maxVY: -1,
+	minVY: -0.02,
+	maxVX: -0.03,
+	minVX: -0.01,
+	boundWidth: 500,
+	boundHeight: 500,
+	boundDepth: 500,
+	boundReaction: 1
+} );
+
+snow.updateComponent( 'position', {
+	y: 50
+} );
+
 cloudLayer.updateComponent( 'emitter', {
 	amount: 100,
 	width: 500,
@@ -64,7 +89,10 @@ cloudLayer.updateComponent( 'emitter', {
 	particleSize: 150,
 	maxVX: 0.05,
 	maxVY: 0.02,
-	maxVZ: 0.03
+	maxVZ: 0.03,
+	boundWidth: 500,
+	boundHeight: 5,
+	boundDepth: 500
 } );
 
 cloudLayer.updateComponent( 'position', {
@@ -77,7 +105,10 @@ cloudLayer02.updateComponent( 'emitter', {
 	width: 500,
 	height: 6,
 	depth: 500,
-	particleSize: 150
+	particleSize: 150,
+	boundWidth: 500,
+	boundHeight: 6,
+	boundDepth: 500
 } );
 
 cloudLayer02.updateComponent( 'position', {
@@ -91,7 +122,7 @@ plane.updateComponent( 'orbitcamera', {
 plane.updateComponent( 'phongmaterial', {
 	shininess: 0,
 	specular: 0,
-	reflectivity: 0.3,
+	reflectivity: 0.2,
 	envMap: 'assets/textures/skybox/nz.jpg'
 } );
 
@@ -104,12 +135,14 @@ atmosphere.updateComponent( 'atmosphere', {
 } );
 
 ecs.addEntity( plane );
+ecs.addEntity( snow );
 ecs.addEntity( cloudLayer02 );
 ecs.addEntity( cloudLayer );
 ecs.addEntity( atmosphere );
 
 // Event listeners
 
+/*
 let cameraInput = document.createElement( 'input' );
 cameraInput.setAttribute( 'type', 'range' );
 cameraInput.setAttribute( 'min', -100 );
@@ -122,8 +155,8 @@ cameraInput.addEventListener( 'change', e => {
 		angleX: cameraInput.value / 100 * 360,
 	} );
 } );
+*/
 
-/*
 window.addEventListener( 'mousemove', e => {
 
 	plane.updateComponent( 'orbitcamera', {
@@ -131,12 +164,12 @@ window.addEventListener( 'mousemove', e => {
 		angleY: e.clientY / 300
 	} );
 } );
-*/
 
 window.addEventListener( 'click', e => {
 
 	plane.updateComponent( 'phongmaterial', {
-		color: 0x9dff00
+		color: 0x9dff00,
+		reflectivity: 1
 	} );
 } );
 

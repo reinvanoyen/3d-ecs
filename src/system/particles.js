@@ -5,6 +5,9 @@ const ECS = require('yagl-ecs'),
 	MathUtils = require('../utils/math')
 ;
 
+const BOUND_VELOCITY_REVERSE = 0;
+const BOUND_RESET_POSITION = 1;
+
 class Particles extends ECS.System {
 
 	constructor( scene, camera ) {
@@ -82,6 +85,42 @@ class Particles extends ECS.System {
 
 				// get the particle
 				let particle = entity.particles.vertices[ pCount ];
+
+				if( emitter.useBounds ) {
+
+					if( emitter.boundReaction == BOUND_VELOCITY_REVERSE ) {
+
+						if( ! MathUtils.pointHasXIntersection( particle, emitter.boundWidth, position.x - emitter.boundWidth / 2 ) ) {
+							particle.velocity.x = -particle.velocity.x;
+						}
+						if( ! MathUtils.pointHasYIntersection( particle, emitter.boundHeight, position.y - emitter.boundHeight / 2 ) ) {
+							particle.velocity.y = -particle.velocity.y;
+						}
+						if( ! MathUtils.pointHasZIntersection( particle, emitter.boundDepth, position.z - emitter.boundDepth / 2 ) ) {
+							particle.velocity.z = -particle.velocity.z;
+						}
+
+					} else if( emitter.boundReaction == BOUND_RESET_POSITION ) {
+
+						let positionVec3 = new THREE.Vector3(
+							position.x - emitter.boundWidth / 2,
+							position.y - emitter.boundHeight / 2,
+							position.z - emitter.boundDepth / 2
+						);
+
+						if( ! MathUtils.boxContainsPoint( particle, emitter.boundWidth, emitter.boundHeight, emitter.boundDepth, positionVec3 ) ) {
+
+							let pX = Math.random() * emitter.width - emitter.width / 2,
+								pY = Math.random() * emitter.height - emitter.height / 2,
+								pZ = Math.random() * emitter.depth - emitter.depth / 2
+							;
+
+							particle.x = pX;
+							particle.y = pY;
+							particle.z = pZ;
+						}
+					}
+				}
 
 				// and the position
 				particle = particle.add( particle.velocity );
