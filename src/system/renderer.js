@@ -12,7 +12,8 @@ class Renderer extends ECS.System {
 		super();
 
 		this.renderer = new THREE.WebGLRenderer( {
-			antialias: true
+			antialias: true,
+			preserveDrawingBuffer: true
 		} );
 
 		this.renderer.setPixelRatio( window.devicePixelRatio );
@@ -35,6 +36,11 @@ class Renderer extends ECS.System {
 			)
 			&& entity.components.position
 		;
+	}
+
+	getSnapshot() {
+
+		return this.renderer.domElement.toDataURL();
 	}
 
 	addMeshToScene( entity, geometry, material ) {

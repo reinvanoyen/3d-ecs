@@ -49,7 +49,7 @@ class DecalSystem extends ECS.System {
 		img.onload = () => {
 
 			// @TODO make it sizable
-			this.sizeVec3 = new THREE.Vector3( img.width / 500, img.height / 500, 1 );
+			this.sizeVec3 = new THREE.Vector3( img.width / 350, img.height / 350, 1 );
 			this.texture.needsUpdate = true;
 		};
 

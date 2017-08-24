@@ -141,6 +141,12 @@ plane.updateComponent( 'orbitcamera', {
 	translateY: 3
 } );
 
+plane.updateComponent( 'velocity', {
+	x: -0.01,
+	y: 0.01,
+	z: 0.02
+} );
+
 plane.updateComponent( 'phongmaterial', {
 	shininess: 0,
 	specular: 0,
@@ -213,15 +219,29 @@ window.addEventListener( 'mousewheel', e => {
 	} );
 } );
 
+let saveButton = document.createElement( 'button' );
+saveButton.textContent = 'Take photo!';
+
+saveButton.addEventListener( 'click', e => {
+
+	let img = document.createElement( 'img' );
+	img.src = renderer.getSnapshot();
+	document.body.appendChild( img );
+} );
+
+document.body.appendChild( saveButton );
+
 // Animation loop
 let angle = 0;
 function animate() {
 
 	angle += 0.005;
 
+	/*
 	plane.updateComponent( 'orbitcamera', {
 		angleX: angle
 	} );
+	*/
 
 	if( plane.components.clickable.clicked ) {
 
