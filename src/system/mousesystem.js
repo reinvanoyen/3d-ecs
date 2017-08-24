@@ -23,8 +23,8 @@ class MouseSystem extends ECS.System {
 
 		this.renderer.domElement.addEventListener( 'mousemove', ( e ) => {
 
-			this.mouseVec3.x = ( ( e.pageX / e.currentTarget.width ) * 2 - 1 );
-			this.mouseVec3.y = - ( e.pageY / e.currentTarget.height ) * 2 + 1;
+			this.mouseVec3.x = ( ( ( e.pageX - e.currentTarget.offsetLeft ) / e.currentTarget.width ) * 2 - 1 );
+			this.mouseVec3.y = - ( ( e.pageY - e.currentTarget.offsetTop ) / e.currentTarget.height ) * 2 + 1;
 		} );
 	}
 
@@ -64,7 +64,6 @@ class MouseSystem extends ECS.System {
 				clickable.y = p.y;
 				clickable.z = p.z;
 				clickable.orientation = this.mouseHelper.rotation;
-
 			}
 		}
 	}

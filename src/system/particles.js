@@ -130,6 +130,14 @@ class Particles extends ECS.System {
 			entity.particleSystem.geometry.verticesNeedUpdate = true;
 		}
 	}
+
+	exit( entity ) {
+
+		this.scene.remove( entity.particleSystem );
+
+		delete entity.particles;
+		delete entity.particleSystem;
+	}
 }
 
 module.exports = Particles;

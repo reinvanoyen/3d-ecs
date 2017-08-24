@@ -15,6 +15,7 @@
     "browserify": "^14.4.0",
     "gulp": "^3.9.1",
     "gutil": "^1.6.4",
+    "jquery": "^3.2.1",
     "lodash.assign": "^4.2.0",
     "three": "^0.87.0",
     "vinyl-buffer": "^1.0.0",

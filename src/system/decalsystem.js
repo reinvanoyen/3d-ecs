@@ -14,32 +14,6 @@ class DecalSystem extends ECS.System {
 		this.scene = scene;
 
 		this.decals = [];
-
-		let input = document.createElement( 'input' );
-		input.setAttribute( 'type', 'file' );
-		document.body.appendChild( input );
-
-		// @TODO
-		let reader = new FileReader();
-
-		input.addEventListener( 'change', e => {
-
-			let file = input.files[ 0 ],
-				type = /image.*/
-			;
-
-			if( file.type.match( type ) ) {
-
-				reader.onload = ( e ) => {
-
-					let img = new Image();
-					this.setTextureFromImage( img );
-					img.src = reader.result;
-				};
-
-				reader.readAsDataURL( file );
-			}
-		} );
 	}
 
 	setTextureFromImage( img ) {
@@ -49,7 +23,7 @@ class DecalSystem extends ECS.System {
 		img.onload = () => {
 
 			// @TODO make it sizable
-			this.sizeVec3 = new THREE.Vector3( img.width / 350, img.height / 350, 1 );
+			this.sizeVec3 = new THREE.Vector3( img.width / 500, img.height / 500, 1 );
 			this.texture.needsUpdate = true;
 		};
 

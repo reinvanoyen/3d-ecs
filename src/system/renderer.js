@@ -22,7 +22,6 @@ class Renderer extends ECS.System {
 		this.camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000000 );
 
 		this.container = document.createElement( 'div' );
-		document.body.appendChild( this.container );
 		this.container.appendChild( this.renderer.domElement );
 
 		this.scene = new THREE.Scene();
@@ -170,6 +169,12 @@ class Renderer extends ECS.System {
 	postUpdate() {
 
 		this.renderer.render( this.scene, this.camera );
+	}
+
+	exit( entity ) {
+
+		this.scene.remove( entity.mesh );
+		delete entity.mesh;
 	}
 }
 
