@@ -12,25 +12,30 @@ class Environment extends ECS.System {
 
 		super();
 		this.scene = scene;
+	}
+
+	enter( entity ) {
+
+		let {atmosphere} = entity.components;
 
 		// Sky
 		this.sky = new THREE.Sky();
 		this.scene.add( this.sky.mesh );
 
 		// Ambient light
-		this.ambient = new THREE.AmbientLight( 0x24353E );
-		this.scene.add( this.ambient );
+		this.ambientLight = new THREE.AmbientLight( atmosphere.ambientLightColor );
+		this.scene.add( this.ambientLight );
 
 		// Sun light
-		this.sunLight = new THREE.DirectionalLight( 0xFBFCE8 );
+		this.sunLight = new THREE.DirectionalLight( atmosphere.sunLightColor );
 		this.sunLight.position.set( 0, 0, 0 );
 		this.scene.add( this.sunLight );
 
 		// Sun position
 		this.sunPosition = new THREE.Vector3();
 
-		let hemiLight = new THREE.HemisphereLight( 0x24353E, 0xffffff, 0.6 );
-		this.scene.add( hemiLight );
+		this.hemiLight = new THREE.HemisphereLight( atmosphere.hemisphereLightColor[0], atmosphere.hemisphereLightColor[1], atmosphere.hemispherLightIntensity );
+		this.scene.add( this.hemiLight );
 	}
 
 	test( entity ) {
@@ -40,6 +45,12 @@ class Environment extends ECS.System {
 	update( entity ) {
 
 		let {atmosphere} = entity.components;
+
+		this.ambientLight.color.setHex( atmosphere.ambientLightColor );
+		this.sunLight.color.setHex( atmosphere.sunLightColor );
+		this.hemiLight.color.setHex( atmosphere.hemisphereLightColor[ 0 ] );
+		this.hemiLight.groundColor.setHex( atmosphere.hemisphereLightColor[ 1 ] );
+		this.hemiLight.intensity = atmosphere.hemisphereLightIntensity;
 
 		let theta = Math.PI * ( atmosphere.inclination - 0.5 );
 		let phi = 2 * Math.PI * ( atmosphere.azimuth - 0.5 );
@@ -58,6 +69,13 @@ class Environment extends ECS.System {
 
 		uniforms.sunPosition.value.copy( this.sunPosition );
 		this.sunLight.position.copy( this.sunPosition );
+	}
+
+	exit( entity ) {
+		this.scene.remove( this.sky.mesh );
+		this.scene.remove( this.ambientLight );
+		this.scene.remove( this.sunLight );
+		this.scene.remove( this.hemiLight );
 	}
 }
 

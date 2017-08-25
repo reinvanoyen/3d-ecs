@@ -19,13 +19,8 @@ class DecalSystem extends ECS.System {
 	setTextureFromImage( img ) {
 
 		this.texture = new THREE.Texture( img );
-
-		img.onload = () => {
-
-			// @TODO make it sizable
-			this.sizeVec3 = new THREE.Vector3( img.width / 500, img.height / 500, 1 );
-			this.texture.needsUpdate = true;
-		};
+		this.sizeVec3 = new THREE.Vector3( img.width / 500, img.height / 500, 1 );
+		this.texture.needsUpdate = true;
 
 		this.decalMaterial = new THREE.MeshPhongMaterial( {
 			specular: 0x444444,

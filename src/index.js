@@ -4,6 +4,7 @@ const $ = require( 'jquery' ),
 	StepInterface = require('./ui/stepinterface'),
 	Step = require('./ui/step'),
 	DecalPicker = require('./ui/decalpicker'),
+	BatchEntitySwitcher = require('./utils/batchentityswitcher'),
 
 	// Entity Component System
 	ECS = require('yagl-ecs'),
@@ -45,6 +46,8 @@ ecs.addSystem( new Movement() );
 ecs.addSystem( decalsystem );
 ecs.addSystem( new MouseSystem( renderer.renderer, renderer.scene, renderer.camera ) );
 
+let batchEntitySwitcher = new BatchEntitySwitcher( ecs );
+
 // Entities
 
 let plane = new ECS.Entity( 0, [
@@ -55,7 +58,33 @@ let plane = new ECS.Entity( 0, [
 	OrbitCamera
 ] );
 
-let atmosphere = new ECS.Entity( 0, [ Atmosphere ] );
+let defaultAtmosphere = new ECS.Entity( 0, [ Atmosphere ] );
+let eveningAtmosphere = new ECS.Entity( 0, [ Atmosphere ] );
+
+defaultAtmosphere.updateComponent( 'atmosphere', {
+	turbidity: 11,
+	reyleigh: 2.8,
+	luminance: 1.1,
+	inclination: 0.3,
+	azimuth: 0.125,
+	ambientLightColor: 0x24353E,
+	sunLightColor: 0xFBFCE8,
+	hemisphereLightColor: [ 0x24353E, 0xffffff ],
+	hemisphereLightIntensity: 0.6
+} );
+
+eveningAtmosphere.updateComponent( 'atmosphere', {
+	turbidity: 11,
+	reyleigh: 2.8,
+	luminance: 0.7,
+	inclination: 0.5,
+	azimuth: 0.125,
+	ambientLightColor: 0x301408,
+	sunLightColor: 0xc98600,
+	hemisphereLightColor: [ 0x0c876e, 0xb74905 ],
+	hemisphereLightIntensity: 0.1
+} );
+
 
 let cloudLayer = new ECS.Entity( 'clouds', [
 	Position,
@@ -66,29 +95,6 @@ let cloudLayer02 = new ECS.Entity( 0, [
 	Position,
 	Emitter
 ] );
-
-let eveningClouds = new ECS.Entity( 0, [
-	Position,
-	Emitter
-] );
-
-// snow.updateComponent( 'position', {
-// 	y: 50
-// } );
-
-eveningClouds.updateComponent( 'emitter', {
-	amount: 10,
-	width: 500,
-	height: 5,
-	depth: 500,
-	particleSize: 100,
-	maxVX: 0.02,
-	maxVY: 0.02,
-	maxVZ: 0.02,
-	boundWidth: 500,
-	boundHeight: 5,
-	boundDepth: 500
-} );
 
 cloudLayer.updateComponent( 'emitter', {
 	amount: 100,
@@ -124,6 +130,43 @@ cloudLayer02.updateComponent( 'position', {
 	y: -20
 } );
 
+let eveningClouds = new ECS.Entity( 0, [
+	Position,
+	Emitter
+] );
+
+eveningClouds.updateComponent( 'emitter', {
+	amount: 100,
+	width: 500,
+	height: 5,
+	depth: 500,
+	particleSize: 100,
+	maxVX: 0.01,
+	maxVY: 0.01,
+	maxVZ: 0.01,
+	boundWidth: 500,
+	boundHeight: 5,
+	boundDepth: 500
+} );
+
+// Set batches
+
+batchEntitySwitcher.addBatch( 'defaultsky', [
+	defaultAtmosphere,
+	cloudLayer02,
+	cloudLayer
+] );
+
+batchEntitySwitcher.addBatch( 'eveningsky', [
+	eveningClouds,
+	eveningAtmosphere
+] );
+
+batchEntitySwitcher.addBatch( 'morningsky', [
+	eveningClouds,
+	defaultAtmosphere
+] );
+
 plane.updateComponent( 'orbitcamera', {
 	radius: 10,
 	translateY: 3
@@ -136,18 +179,7 @@ plane.updateComponent( 'phongmaterial', {
 	envMap: 'assets/textures/reflection.jpg'
 } );
 
-atmosphere.updateComponent( 'atmosphere', {
-	turbidity: 11,
-	reyleigh: 2.8,
-	luminance: 1.1,
-	inclination: 0.3,
-	azimuth: 0.125
-} );
-
 ecs.addEntity( plane );
-ecs.addEntity( cloudLayer02 );
-ecs.addEntity( cloudLayer );
-ecs.addEntity( atmosphere );
 
 window.addEventListener( 'mousewheel', e => {
 
@@ -177,16 +209,6 @@ function animate() {
 	plane.updateComponent( 'orbitcamera', {
 		angleX: angle
 	} );
-	//
-	// if( plane.components.clickable && plane.components.clickable.clicked ) {
-	//
-	// 	plane.updateComponent( 'phongmaterial', {
-	// 		color: Math.random() * 0xffffff,
-	// 		specular: Math.random() * 0xffffff,
-	// 		shininess: Math.random() * 50,
-	// 		reflectivity: Math.random()
-	// 	} );
-	// }
 
 	requestAnimationFrame( animate );
 	ecs.update();
@@ -203,18 +225,8 @@ let stepLogo = new Step( 'Logo', 'assets/svg/lol.svg', () => {
 	plane.addComponent( 'clickable', Clickable.defaults );
 	plane.addComponent( 'decal', Decal.defaults );
 
-	let decalPicker = new DecalPicker( img => {
+	let decalPicker = new DecalPicker( img => decalsystem.setTextureFromImage( img ) );
 
-		console.log( 'picked image' );
-		decalsystem.setTextureFromImage( img );
-	} );
-
-	decalPicker.addDecal( 'assets/textures/logo.png' );
-	decalPicker.addDecal( 'assets/textures/logo.png' );
-	decalPicker.addDecal( 'assets/textures/logo.png' );
-	decalPicker.addDecal( 'assets/textures/logo.png' );
-	decalPicker.addDecal( 'assets/textures/logo.png' );
-	decalPicker.addDecal( 'assets/textures/logo.png' );
 	decalPicker.addDecal( 'assets/textures/logo.png' );
 
 	return decalPicker.build();
@@ -231,13 +243,7 @@ let stepSky = new Step( 'Sky', 'assets/svg/lol.svg', () => {
 		.text( 'Summer noon' )
 		.click( e => {
 
-			atmosphere.updateComponent( 'atmosphere', {
-				turbidity: 11,
-				reyleigh: 2.8,
-				luminance: 1.1,
-				inclination: 0.3,
-				azimuth: 0.125
-			} );
+			batchEntitySwitcher.setBatch( 'defaultsky' );
 		} )
 	;
 
@@ -245,23 +251,22 @@ let stepSky = new Step( 'Sky', 'assets/svg/lol.svg', () => {
 		.text( 'Summer evening' )
 		.click( e => {
 
-			ecs.removeEntity( cloudLayer );
-			ecs.removeEntity( cloudLayer02 );
-			ecs.addEntity( eveningClouds );
+			batchEntitySwitcher.setBatch( 'eveningsky' );
+		} )
+	;
 
-			atmosphere.updateComponent( 'atmosphere', {
-				turbidity: 10,
-				reyleigh: 2,
-				luminance: 1,
-				inclination: 0.5,
-				azimuth: 0.25
-			} );
+	let $sky03 = $( '<button>' )
+		.text( 'Sundaaay morrrning' )
+		.click( e => {
+
+			batchEntitySwitcher.setBatch( 'morningsky' );
 		} )
 	;
 
 	let $container = $( '<div>' )
 		.append( $sky01 )
 		.append( $sky02 )
+		.append( $sky03 )
 	;
 
 	return $container;
@@ -271,9 +276,9 @@ let stepSky = new Step( 'Sky', 'assets/svg/lol.svg', () => {
 
 } );
 
-stepInterface.addStep( stepLogo );
 stepInterface.addStep( stepSky );
+stepInterface.addStep( stepLogo );
 
 $( 'body' ).append( stepInterface.build() );
 
-//stepInterface.$content.append( renderer.container );
+stepInterface.$content.append( renderer.container );

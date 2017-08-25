@@ -43,11 +43,16 @@ class DecalPicker {
 			.addClass( 'decal-picker' )
 		;
 
+		this.$decalContainer = $( '<div>' )
+			.addClass( 'decal-picker-container' )
+			.appendTo( this.$container )
+		;
+
 		// Build input for custom decals from computer of user
 
 		let $input = $( '<input>' )
 			.attr( 'type', 'file' )
-			.appendTo( this.$container )
+			.prependTo( this.$container )
 		;
 
 		let reader = new FileReader(),
@@ -64,7 +69,7 @@ class DecalPicker {
 
 				reader.onload = e => {
 
-					this.$container.prepend( this.buildDecal( reader.result ) );
+					this.$decalContainer.prepend( this.buildDecal( reader.result ) );
 				};
 
 				reader.readAsDataURL( file );
@@ -75,7 +80,7 @@ class DecalPicker {
 
 		this.decalSrcs.forEach( src => {
 
-			this.$container.append( this.buildDecal( src ) );
+			this.$decalContainer.append( this.buildDecal( src ) );
 		} );
 
 		return this.$container;

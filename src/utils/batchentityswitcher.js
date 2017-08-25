@@ -6,7 +6,7 @@ class BatchEntitySwitcher {
 
 		this.ecs = ecs;
 		this.batches = {};
-		this.activeSceneId = null;
+		this.activeBatchId = null;
 		this.activeEntities = [];
 	}
 
@@ -30,6 +30,7 @@ class BatchEntitySwitcher {
 			// Add new entities
 			this.batches[ id ].forEach( e => {
 
+				this.activeEntities.push( e );
 				this.ecs.addEntity( e );
 			} );
 		}
